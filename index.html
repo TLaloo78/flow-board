@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flow Board</title>
+    <meta
+      name="description"
+      content="Flow Board is Quadra's private Kanban board for planning and tracking team work. Sign in with your invited account."
+    />
+    <!-- Private, invite-only app: keep it out of search results (see public/robots.txt). -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#04182a" />
+
+    <!-- Start the TLS handshake with Supabase while the app's JavaScript downloads. -->
+    <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Link previews (Teams, Slack, email). Absolute URLs come from VITE_SITE_URL. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Flow Board" />
+    <meta property="og:title" content="Flow Board" />
+    <meta property="og:description" content="Quadra's private Kanban board for planning and tracking team work." />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:image" content="%VITE_SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Flow Board logo: three board columns in cyan, blue and cream on navy." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Flow Board" />
+    <meta name="twitter:description" content="Quadra's private Kanban board for planning and tracking team work." />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
+    <script>
+      // Apply the saved or OS theme before first paint to avoid a light flash (see useTheme.ts).
+      ;(function () {
+        var theme
+        try {
+          theme = localStorage.getItem('flow-board-theme')
+        } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        document.documentElement.dataset.theme = theme
+      })()
+    </script>
+  </head>
+  <body>
+    <noscript>Flow Board needs JavaScript to run. Please enable it and reload.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

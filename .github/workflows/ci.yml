@@ -1,0 +1,46 @@
+# Lint, test, typecheck and build on every push and pull request.
+# Tests use an in-memory Supabase fake (src/test/supabaseMock.ts), so no
+# secrets or database access are needed here.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# Least privilege: the workflow only reads the code.
+permissions:
+  contents: read
+
+# A newer push to the same branch or PR cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and regression tests
+        run: npm test
+
+      - name: Typecheck and build
+        run: npm run build
+        env:
+          # Optional repository variable (Settings > Secrets and variables > Actions > Variables).
+          # Only affects the absolute link-preview URLs in index.html.
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}

@@ -1,0 +1,977 @@
+/* Palette follows the Quadra brand (quadragroup.com). */
+:root {
+  --navy: #04182a;
+  --navy-85: #2a3b4a;
+  --cyan: #53b3e7;
+  --cream: #f7f4f2;
+
+  --bg: var(--cream);
+  --surface: #ffffff;
+  --column: #ece8e4;
+  --text: var(--navy);
+  --muted: #4a5561;
+  --border: #d9dcdf;
+  --primary: #295ec6;
+  --primary-hover: #1f4ba3;
+  --danger: #cf3621;
+  --high: #e48047;
+  --medium: #acb7fa;
+  --low: #59a88f;
+  --radius: 10px;
+  --radius-pill: 33px;
+  --shadow: 0 1px 2px rgba(4, 24, 42, 0.08), 0 2px 8px rgba(4, 24, 42, 0.06);
+
+  font-family: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  --icon: #4a4a4a;
+  --focus: var(--primary);
+  /* Input borders need 3:1 against --bg and --surface (WCAG 1.4.11). */
+  --control-border: #7d8791;
+  color-scheme: light;
+}
+
+/* data-theme is set before first paint by index.html, then kept in sync by useTheme.
+   Dark values are checked against WCAG AA: 4.5:1 for text, 3:1 for focus rings and input borders. */
+:root[data-theme='dark'] {
+  --bg: #020f1b;
+  --surface: #0f2538;
+  --column: #081d30;
+  --text: #f7f4f2;
+  --muted: #9aa6b2;
+  --border: #2a3b4a;
+  --primary: #3a6fd8;
+  --primary-hover: #2f62c9;
+  --danger: #ec7462;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --icon: #b8bcc2;
+  --focus: var(--cyan);
+  --control-border: #6b7d8f;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Browsers scroll focused elements clear of the fixed Undo toast (WCAG 2.4.11). */
+html {
+  scroll-padding-bottom: 88px;
+}
+
+/* One switch for all motion: hover fades, the theme thumb and the toast slide (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Windows High Contrast replaces backgrounds, which would hide the theme
+   switch's thumb; draw it with system colours instead. */
+@media (forced-colors: active) {
+  .theme-toggle::before {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  .theme-toggle-icon--active {
+    forced-color-adjust: none;
+    color: HighlightText;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--navy);
+  color: var(--cream);
+  border-bottom: 3px solid var(--cyan);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.app-header h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Secondary buttons and the search box sit on navy in the header. */
+.app-header .btn:not(.btn-primary) {
+  background: transparent;
+  border-color: rgba(247, 244, 242, 0.4);
+  color: var(--cream);
+}
+
+.app-header .btn:not(.btn-primary):hover {
+  border-color: var(--cream);
+  filter: none;
+}
+
+.app-header .search-input {
+  background: rgba(247, 244, 242, 0.08);
+  border-color: rgba(247, 244, 242, 0.45);
+  color: var(--cream);
+}
+
+.app-header .search-input::placeholder {
+  color: rgba(247, 244, 242, 0.6);
+}
+
+.app-header .search-input:focus {
+  outline-color: var(--cyan);
+}
+
+.app-header .search-count,
+.app-header .user-email {
+  color: rgba(247, 244, 242, 0.7);
+}
+
+.app-header .icon-btn {
+  color: var(--cream);
+}
+
+/* Sun/moon switch: the thumb sits behind whichever mode is active.
+   .btn.theme-toggle outranks the later .btn padding. */
+.btn.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 2px;
+}
+
+.theme-toggle::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: var(--cream);
+  transition: transform 180ms ease;
+}
+
+.theme-toggle[aria-pressed='true']::before {
+  transform: translateX(26px);
+}
+
+.theme-toggle-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  transition: color 180ms ease;
+}
+
+.theme-toggle-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.theme-toggle-icon--active {
+  color: var(--navy);
+}
+
+.app-header .btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.user-email {
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 360px;
+  margin: 0 24px;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.search-input:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: -1px;
+}
+
+.search-count {
+  flex: none;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 24px 0;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  /* Pure red is 4.2:1 on this tint in light mode; mixing toward text gives 5.2:1+. */
+  color: color-mix(in srgb, var(--danger) 85%, var(--text));
+  font-size: 0.9rem;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  color: var(--muted);
+}
+
+/* Auth */
+.auth {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 16px;
+  background: var(--navy);
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(380px, 100%);
+  padding: 32px;
+  background: var(--surface);
+  border-top: 4px solid var(--cyan);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.auth-card .brand {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-card .auth-subtitle {
+  text-align: center;
+}
+
+.auth-card .logo {
+  width: 56px;
+  height: 56px;
+}
+
+.auth-card h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.auth-card .btn-primary {
+  margin-top: 4px;
+  padding: 11px 20px;
+}
+
+.auth-subtitle {
+  margin: -8px 0 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.form-message {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.form-message--error {
+  color: var(--danger);
+}
+
+.auth-footnote {
+  text-align: center;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 24px;
+  overflow-x: auto;
+  align-items: start;
+}
+
+/* Column */
+/* Each column sets --accent (Quadra palette); border, tint and badge follow it. */
+.column {
+  --accent: var(--primary);
+  background: color-mix(in srgb, var(--accent) 12%, var(--column));
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-height: 200px;
+  transition: background-color 120ms;
+}
+
+.column[data-column='backlog'] {
+  --accent: #5d6e9c;
+}
+
+.column[data-column='in-progress'] {
+  --accent: #295ec6;
+}
+
+.column[data-column='in-review'] {
+  --accent: #e48047;
+}
+
+.column[data-column='on-hold'] {
+  --accent: #e8b744;
+}
+
+.column[data-column='done'] {
+  --accent: #59a88f;
+}
+
+.column .column-count {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 28%, var(--surface));
+}
+
+.column.column--over {
+  background: color-mix(in srgb, var(--accent) 28%, var(--column));
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.column-header h2 {
+  flex: 1;
+}
+
+.column-clear {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+/* Red is mixed toward the text color so it keeps 4.5:1 on the column tint. */
+.column-clear:hover,
+.column-clear:focus-visible {
+  color: color-mix(in srgb, var(--danger) 75%, var(--text));
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+.column-clear:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.column-header h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.column-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.column-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 60px;
+}
+
+.column-empty {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 20px 0;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px 12px;
+  cursor: grab;
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+.card--dragging {
+  opacity: 0.4;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.card--overdue {
+  border-left: 4px solid var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+
+/* Title is a text-styled button; clicking it swaps in an input. */
+.card-title-btn {
+  all: unset;
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+  cursor: text;
+}
+
+.card-title-btn:hover {
+  background: var(--column);
+}
+
+.card-title-btn:focus-visible {
+  outline: 2px solid var(--focus);
+}
+
+.card-title-input {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 2px 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Long names wrap rather than truncate, so nothing is lost when zoomed (WCAG 1.4.10). */
+.card-assignee {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.avatar {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icon avatars drop the circle and draw in brand blue. */
+.avatar--icon {
+  width: 26px;
+  height: 26px;
+  background: none;
+  color: var(--icon);
+}
+
+.avatar--icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.card-due {
+  flex: none;
+}
+
+/* Italic, not faded: a 70% fade fell to 3.6:1 (WCAG 1.4.3). */
+.card-due--none {
+  font-style: italic;
+}
+
+.card-due--overdue {
+  color: color-mix(in srgb, var(--danger) 85%, var(--text));
+  font-weight: 600;
+}
+
+.card-actions {
+  display: flex;
+  gap: 2px;
+}
+
+/* Move and Edit appear on hover or focus; delete is always visible.
+   Only on devices that can hover — touch screens always show them. */
+@media (hover: hover) {
+  .card-actions .icon-btn:not(.icon-btn--delete) {
+    opacity: 0;
+    transition: opacity 120ms;
+  }
+
+  .card:hover .card-actions .icon-btn,
+  .card:focus-within .card-actions .icon-btn,
+  .card-actions .icon-btn[aria-expanded='true'] {
+    opacity: 1;
+  }
+}
+
+/* Move menu: a popover, so it sits in the top layer; Card.tsx sets its position. */
+.move-menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  min-width: 170px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.move-menu button {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.move-menu button:hover:not(:disabled) {
+  background: var(--column);
+}
+
+.move-menu button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.move-menu button:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.move-menu hr {
+  margin: 6px 4px;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.move-menu-heading {
+  margin: 0;
+  padding: 2px 10px 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+/* Undo toast. Navy in both themes; the border keeps it distinct on the dark background.
+   Contrast: cream text 16:1, cyan Undo 8:1 on navy. */
+.toast-region {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: max-content;
+  max-width: min(560px, calc(100vw - 32px));
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 18px;
+  border: 1px solid rgba(247, 244, 242, 0.2);
+  border-radius: var(--radius);
+  background: var(--navy);
+  color: var(--cream);
+  font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  animation: toast-in 180ms ease-out;
+}
+
+/* Wraps instead of truncating long card titles (WCAG 1.4.10). */
+.toast-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toast-undo,
+.toast-close {
+  flex: none;
+  min-height: 32px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  cursor: pointer;
+}
+
+.toast-undo {
+  padding: 4px 12px;
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.toast-close {
+  width: 32px;
+  color: rgba(247, 244, 242, 0.75);
+}
+
+.toast-undo:hover,
+.toast-close:hover {
+  background: rgba(247, 244, 242, 0.1);
+}
+
+.toast-undo:focus-visible,
+.toast-close:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+
+/* The board takes focus programmatically when the toast closes; no ring needed. */
+.board:focus {
+  outline: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.priority {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  /* Transparent normally; shows as an outline in Windows High Contrast. */
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+
+/* Tinted pills keep brand hues while staying readable in both themes. */
+.priority--high {
+  color: color-mix(in srgb, var(--high) 60%, var(--text));
+  background: color-mix(in srgb, var(--high) 14%, transparent);
+}
+
+.priority--medium {
+  color: color-mix(in srgb, var(--medium) 45%, var(--text));
+  background: color-mix(in srgb, var(--medium) 18%, transparent);
+}
+
+.priority--low {
+  color: color-mix(in srgb, var(--low) 60%, var(--text));
+  background: color-mix(in srgb, var(--low) 18%, transparent);
+}
+
+/* Buttons */
+.btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms;
+}
+
+.btn:hover {
+  filter: brightness(0.96);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  filter: none;
+}
+
+.btn-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: var(--column);
+  color: var(--text);
+}
+
+.icon-btn--danger:hover {
+  color: var(--danger);
+}
+
+.icon-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* Modal */
+.modal {
+  border: none;
+  border-top: 4px solid var(--cyan);
+  border-radius: var(--radius);
+  padding: 0;
+  width: min(440px, calc(100vw - 32px));
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal::backdrop {
+  background: rgba(4, 24, 42, 0.6);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+}
+
+.modal-body h2 {
+  font-size: 1.15rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.field input,
+.field select {
+  padding: 9px 12px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: -1px;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  /* Columns stack top to bottom, so the page scrolls in one direction only. */
+  .board {
+    grid-template-columns: 1fr;
+    overflow-x: visible;
+    padding: 16px;
+  }
+
+  /* Empty columns shouldn't take a screenful each once stacked. */
+  .column {
+    min-height: 0;
+  }
+
+  .app-header {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .user-email {
+    display: none;
+  }
+
+  .app-header {
+    flex-wrap: wrap;
+  }
+
+  .search {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .error-banner {
+    margin: 12px 16px 0;
+  }
+
+  .field-row {
+    flex-direction: column;
+  }
+}

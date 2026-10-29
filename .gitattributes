@@ -1,0 +1,3 @@
+# Store text files with LF so CI (Linux) and Windows checkouts agree.
+* text=auto eol=lf
+*.png binary
